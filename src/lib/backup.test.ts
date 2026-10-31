@@ -12,7 +12,7 @@ describe('parseWorkspaceBackup', () => {
     expect(parseWorkspaceBackup(valid)).toEqual(valid);
   });
 
-  it('accepts empty collections', () => {
+  it('accepts older backups without optional contact notes and follow-up dates', () => {\n    const legacy = { ...valid, contacts: [{ id: 'c2', name: 'Sam', email: '', company: '', stage: 'Lead', value: 0, createdAt: '2026-10-01' }] };\n    expect(parseWorkspaceBackup(legacy).contacts[0].notes).toBeUndefined();\n  });\n\n  it('rejects contact notes that exceed the supported length', () => {\n    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], notes: 'x'.repeat(2001) }] };\n    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);\n  });\n\n  it('accepts empty collections', () => {
     expect(parseWorkspaceBackup({ contacts: [], tasks: [], offers: [] })).toEqual({ contacts: [], tasks: [], offers: [] });
   });
 
