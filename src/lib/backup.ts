@@ -32,7 +32,8 @@ export function parseWorkspaceBackup(value: unknown): WorkspaceBackup {
     typeof item.value === 'number' && Number.isFinite(item.value) && item.value >= 0 &&
     typeof item.createdAt === 'string' &&
     (item.notes === undefined || (typeof item.notes === 'string' && item.notes.length <= 2000)) &&
-    (item.followUpDate === undefined || (typeof item.followUpDate === 'string' && (item.followUpDate === '' || /^\\d{4}-\\d{2}-\\d{2}$/.test(item.followUpDate)))) &&\n    (item.activityLog === undefined || (Array.isArray(item.activityLog) && item.activityLog.length <= 100 && item.activityLog.every(entry => isRecord(entry) && typeof entry.id === 'string' && entry.id.length > 0 && typeof entry.at === 'string' && !Number.isNaN(Date.parse(entry.at)) && typeof entry.note === 'string' && entry.note.length <= 1000)))
+    (item.followUpDate === undefined || (typeof item.followUpDate === 'string' && (item.followUpDate === '' || /^\d{4}-\d{2}-\d{2}$/.test(item.followUpDate)))) &&
+    (item.activityLog === undefined || (Array.isArray(item.activityLog) && item.activityLog.length <= 100 && item.activityLog.every(entry => isRecord(entry) && typeof entry.id === 'string' && entry.id.length > 0 && typeof entry.at === 'string' && !Number.isNaN(Date.parse(entry.at)) && typeof entry.note === 'string' && entry.note.length <= 1000)))
   );
 
   const validTasks = tasks.every((item): item is Task =>
