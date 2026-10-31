@@ -11,3 +11,5 @@
 .check-row small.complete{color:#9dd2ac;background:#25382e}.access-card .button.danger{background:#2c1d1c;color:#e7a49d;border-color:#693d38}.stage-select{border:1px solid #40382d;border-radius:6px;background:#211e1a;color:#e2c28b;padding:5px 7px;font-size:9px}
 
 .public-demo-link{border:0;background:none;color:#a99b85;text-decoration:underline;font-size:10px;padding:12px}.public-demo-link:hover{color:#e6c28b}
+
+.demo-banner{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-bottom:20px;border:1px solid #51412b;border-radius:9px;background:#292116;color:#d5c4a7;font-size:10px}.demo-banner>svg{color:#d7b783;flex-shrink:0}.demo-banner span{flex:1}.demo-banner b{color:#f0dfc5}.demo-banner button{border:0;background:none;color:#e2c28b;text-decoration:underline;font-size:10px}
