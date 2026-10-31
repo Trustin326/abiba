@@ -13,7 +13,7 @@ create index if not exists contacts_owner_created on public.contacts(user_id,cre
 -- Payment records are server-managed only. Never write these from the browser.
 create table if not exists public.purchases (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
   product_key text not null,
   stripe_checkout_session_id text not null unique,
   stripe_payment_intent_id text unique,
@@ -41,3 +41,10 @@ create policy "owners read entitlements" on public.entitlements
 create index if not exists purchases_owner_created on public.purchases(user_id, created_at desc);
 -- App records are synchronized by the authenticated client under owner-only RLS.
 -- Payment records are written only by the trusted server-side webhook.
+
+-- Preserve the minimum purchase ledger if a customer deletes their account.
+-- This migration also upgrades projects where the original NOT NULL FK exists.
+alter table public.purchases alter column user_id drop not null;
+alter table public.purchases drop constraint if exists purchases_user_id_fkey;
+alter table public.purchases add constraint purchases_user_id_fkey
+  foreign key (user_id) references auth.users(id) on delete set null;
