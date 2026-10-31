@@ -48,8 +48,10 @@ Deno.serve(async (req) => {
         console.error("Checkout metadata validation failed", event.id);
         return new Response("Invalid checkout metadata", { status: 400 });
       }
+      const { data: accountLookup } = await db.auth.admin.getUserById(userId);
+      const accountExists = Boolean(accountLookup?.user);
       const { data: purchase, error: purchaseError } = await db.from("purchases").upsert({
-        user_id: userId,
+        user_id: accountExists ? userId : null,
         product_key: productKey,
         stripe_checkout_session_id: object.id,
         stripe_payment_intent_id: typeof object.payment_intent === "string" ? object.payment_intent : null,
@@ -59,6 +61,9 @@ Deno.serve(async (req) => {
         paid_at: new Date().toISOString(),
       }, { onConflict: "stripe_checkout_session_id" }).select("id").single();
       if (purchaseError || !purchase) throw purchaseError ?? new Error("Purchase was not saved");
+      // A customer may delete their account before an asynchronous payment settles.
+      // Retain the payment record without recreating a deleted account or entitlement.
+      if (!accountExists) return new Response(JSON.stringify({ received: true, accountDeleted: true }), { status: 200, headers: { "Content-Type": "application/json" } });
       const { error: entitlementError } = await db.from("entitlements").upsert({
         user_id: userId,
         product_key: productKey,
