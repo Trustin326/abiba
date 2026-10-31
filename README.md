@@ -5,7 +5,7 @@ A focused business workspace for freelancers, creators, consultants, and small t
 ## Included product
 
 - Overview dashboard: client value, sales pipeline, open tasks, completed work, and offers
-- Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, deletion, and live-count pipeline filters for each stage
+- Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, deletion, and live-count pipeline filters for each stage, contact notes, and follow-up dates
 - Task manager: due windows, priorities, completion tracking, and deletion
 - Offer catalog: service/package records, prices, draft/ready status, deletion, and native share-sheet / copy-to-clipboard sharing for ready offers
 - Responsive premium dark interface and public product landing page
@@ -105,7 +105,7 @@ The public portal contains privacy, terms, and refund-information **drafts** so 
 ### Implemented in the repository
 - [x] Public landing page, feature overview, pricing information, and FAQs
 - [x] Sign-up, sign-in, password-reset request, and password recovery flows
-- [x] Contacts, tasks, offers, search, export, validated JSON backup restore, and responsive dashboard
+- [x] Contacts with notes and follow-up dates, tasks, offers, search, export, validated JSON backup restore, and responsive dashboard
 - [x] Per-user Supabase cloud persistence and RLS schema
 - [x] One-time checkout function with server-side Stripe Price validation
 - [x] Signed Stripe webhook and server-verified entitlement gate
