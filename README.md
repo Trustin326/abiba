@@ -7,7 +7,7 @@ A focused business workspace for freelancers, creators, consultants, and small t
 - Overview dashboard: client value, sales pipeline, open tasks, completed work, and offers
 - Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, and deletion
 - Task manager: due windows, priorities, completion tracking, and deletion
-- Offer catalog: service/package records, prices, draft/ready status, and deletion
+- Offer catalog: service/package records, prices, draft/ready status, deletion, and native share-sheet / copy-to-clipboard sharing for ready offers
 - Responsive premium dark interface and public product landing page
 - Introductory price display: USD $59 one-time; planned standard price USD $79 one-time
 - Supabase email/password sign-up and sign-in, password reset, and password recovery
@@ -111,7 +111,7 @@ The public portal contains privacy, terms, and refund-information **drafts** so 
 - [x] Signed Stripe webhook and server-verified entitlement gate
 - [x] Authenticated account deletion code and customer control
 - [x] Customer-facing legal-information drafts
-- [x] Unit tests for core dashboard metrics and JSON backup validation
+- [x] Unit tests for dashboard metrics, JSON backup validation, and shareable offer summaries
 
 ### Still required before sales
 - [ ] Apply the SQL schema and validate RLS with separate accounts
