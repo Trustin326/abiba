@@ -13,3 +13,5 @@
 .public-demo-link{border:0;background:none;color:#a99b85;text-decoration:underline;font-size:10px;padding:12px}.public-demo-link:hover{color:#e6c28b}
 
 .demo-banner{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-bottom:20px;border:1px solid #51412b;border-radius:9px;background:#292116;color:#d5c4a7;font-size:10px}.demo-banner>svg{color:#d7b783;flex-shrink:0}.demo-banner span{flex:1}.demo-banner b{color:#f0dfc5}.demo-banner button{border:0;background:none;color:#e2c28b;text-decoration:underline;font-size:10px}
+
+.import-button{position:relative;overflow:hidden;cursor:pointer}.import-button input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
