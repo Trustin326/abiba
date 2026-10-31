@@ -10,6 +10,8 @@ const corsHeaders = {
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (request.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+  const configuredOrigin = Deno.env.get("APP_ORIGIN") ? new URL(Deno.env.get("APP_ORIGIN")!).origin : "";
+  if (!configuredOrigin || request.headers.get("origin") !== configuredOrigin) return Response.json({ error: "Origin not allowed" }, { status: 403, headers: corsHeaders });
   const authorization = request.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) return Response.json({ error: "Sign in required" }, { status: 401, headers: corsHeaders });
 
