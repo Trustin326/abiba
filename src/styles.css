@@ -9,3 +9,5 @@
 .offer-foot button{display:inline-grid;place-items:center;width:27px;height:27px;border:1px solid #39342d;border-radius:7px;color:#d7b783}.offer-foot button:hover{background:#30271c;color:#f0d2a1}
 
 .check-row small.complete{color:#9dd2ac;background:#25382e}.access-card .button.danger{background:#2c1d1c;color:#e7a49d;border-color:#693d38}.stage-select{border:1px solid #40382d;border-radius:6px;background:#211e1a;color:#e2c28b;padding:5px 7px;font-size:9px}
+
+.public-demo-link{border:0;background:none;color:#a99b85;text-decoration:underline;font-size:10px;padding:12px}.public-demo-link:hover{color:#e6c28b}
