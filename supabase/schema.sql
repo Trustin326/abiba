@@ -53,3 +53,4 @@ alter table public.purchases add constraint purchases_user_id_fkey
 alter table public.contacts add column if not exists notes text not null default '' check (char_length(notes) <= 2000);
 alter table public.contacts add column if not exists follow_up_date date;
 create index if not exists contacts_owner_follow_up on public.contacts(user_id, follow_up_date) where follow_up_date is not null;
+\n-- Interaction timeline entries are stored per contact and remain protected by owner RLS.\nalter table public.contacts add column if not exists activity_log jsonb not null default '[]'::jsonb check (jsonb_typeof(activity_log) = 'array' and jsonb_array_length(activity_log) <= 100);\n
