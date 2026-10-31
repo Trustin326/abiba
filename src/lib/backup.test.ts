@@ -22,7 +22,18 @@ describe('parseWorkspaceBackup', () => {
     expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);
   });
 
-  it('accepts and preserves a contact interaction timeline', () => {\n    const activity = { id: 'a1', at: '2026-10-31T12:00:00.000Z', note: 'Sent proposal by email' };\n    const withActivity = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [activity] }] };\n    expect(parseWorkspaceBackup(withActivity).contacts[0].activityLog).toEqual([activity]);\n  });\n\n  it('rejects malformed or oversized contact activity history', () => {\n    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [{ id: '', at: 'not-a-date', note: 'x'.repeat(1001) }] }] };\n    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);\n  });\n\n  it('accepts empty collections', () => {
+  it('accepts and preserves a contact interaction timeline', () => {
+    const activity = { id: 'a1', at: '2026-10-31T12:00:00.000Z', note: 'Sent proposal by email' };
+    const withActivity = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [activity] }] };
+    expect(parseWorkspaceBackup(withActivity).contacts[0].activityLog).toEqual([activity]);
+  });
+
+  it('rejects malformed or oversized contact activity history', () => {
+    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [{ id: '', at: 'not-a-date', note: 'x'.repeat(1001) }] }] };
+    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);
+  });
+
+  it('accepts empty collections', () => {
     expect(parseWorkspaceBackup({ contacts: [], tasks: [], offers: [] })).toEqual({ contacts: [], tasks: [], offers: [] });
   });
 
