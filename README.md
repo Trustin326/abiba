@@ -81,7 +81,7 @@ Subscribe at minimum to:
 
 Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe test mode first. Verify successful payments, abandoned checkout, duplicate webhook delivery, refunds, disputes, and failed payments before enabling live mode.
 
-**Important release limitation:** the secure server-side checkout and webhook foundations are in the repository, but the customer-facing purchase button, entitlement-based app lock, customer billing/support screens, and live Stripe/Supabase configuration still need to be connected and tested. Do not advertise checkout as active or accept live payments until that end-to-end flow is complete. A success URL is never proof of payment.
+**Important release limitation:** the customer purchase gate and secure server-side checkout/webhook code are now in the repository. They are not yet live: Supabase and Stripe credentials, a real one-time Price ID, deployed Edge Functions, a configured webhook endpoint, and end-to-end test purchases are still required. The product also still needs customer-facing billing/support workflows and reviewed legal policies. Do not advertise checkout as active or accept live payments until the complete flow is configured and verified. A success URL is never proof of payment.
 
 ## GitHub Pages
 
@@ -96,7 +96,7 @@ Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe
 - [ ] Apply the SQL schema and validate RLS using separate test accounts.
 - [ ] Configure the one-time Stripe Price and Supabase Edge Function secrets.
 - [ ] Add and test the Stripe webhook endpoint in test mode.
-- [ ] Add purchase CTA and enforce access using server-verified entitlements.
+- [x] Add purchase CTA and enforce access using server-verified entitlements in the application code.\n- [ ] Verify the entitlement gate and payment lifecycle end to end in Stripe test mode.
 - [ ] Add account recovery, account deletion, privacy request, and support workflows.
 - [ ] Publish reviewed Privacy Policy, Terms, Refund/Cancellation Policy, and contact/support details.
 - [ ] Add automated unit, integration, and end-to-end tests.
