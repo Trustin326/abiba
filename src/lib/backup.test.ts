@@ -12,7 +12,17 @@ describe('parseWorkspaceBackup', () => {
     expect(parseWorkspaceBackup(valid)).toEqual(valid);
   });
 
-  it('accepts older backups without optional contact notes and follow-up dates', () => {\n    const legacy = { ...valid, contacts: [{ id: 'c2', name: 'Sam', email: '', company: '', stage: 'Lead', value: 0, createdAt: '2026-10-01' }] };\n    expect(parseWorkspaceBackup(legacy).contacts[0].notes).toBeUndefined();\n  });\n\n  it('rejects contact notes that exceed the supported length', () => {\n    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], notes: 'x'.repeat(2001) }] };\n    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);\n  });\n\n  it('accepts empty collections', () => {
+  it('accepts older backups without optional contact notes and follow-up dates', () => {
+    const legacy = { ...valid, contacts: [{ id: 'c2', name: 'Sam', email: '', company: '', stage: 'Lead', value: 0, createdAt: '2026-10-01' }] };
+    expect(parseWorkspaceBackup(legacy).contacts[0].notes).toBeUndefined();
+  });
+
+  it('rejects contact notes that exceed the supported length', () => {
+    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], notes: 'x'.repeat(2001) }] };
+    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);
+  });
+
+  it('accepts and preserves a contact interaction timeline', () => {\n    const activity = { id: 'a1', at: '2026-10-31T12:00:00.000Z', note: 'Sent proposal by email' };\n    const withActivity = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [activity] }] };\n    expect(parseWorkspaceBackup(withActivity).contacts[0].activityLog).toEqual([activity]);\n  });\n\n  it('rejects malformed or oversized contact activity history', () => {\n    const invalid = { ...valid, contacts: [{ ...valid.contacts[0], activityLog: [{ id: '', at: 'not-a-date', note: 'x'.repeat(1001) }] }] };\n    expect(() => parseWorkspaceBackup(invalid)).toThrow(/invalid or unsupported/);\n  });\n\n  it('accepts empty collections', () => {
     expect(parseWorkspaceBackup({ contacts: [], tasks: [], offers: [] })).toEqual({ contacts: [], tasks: [], offers: [] });
   });
 
