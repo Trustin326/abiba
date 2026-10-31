@@ -9,9 +9,13 @@ A premium, dark workspace for freelancers, creators, consultants, and small busi
 - Task list with priorities and completion tracking
 - Offer catalog for services and packages
 - Search, JSON workspace export, responsive navigation
+- Public landing page with feature overview, one-time pricing, and FAQs
+- Supabase email/password sign-up and sign-in, password-reset request, and password recovery
+- Customer-facing privacy, terms, and refund-information draft pages (not finalized legal policies)
 - Supabase email/password authentication
 - Per-user Supabase cloud persistence for contacts, tasks, and offers
-- Stripe Checkout Edge Function for a one-time lifetime purchase
+- Stripe Checkout Edge Function for a one-time lifetime purchase with a server-side Stripe Price validation check
+- Authenticated account deletion endpoint; workspace and entitlements cascade while the minimum purchase ledger is retained without its account link
 - Signature-verified Stripe webhook for payment confirmation, refunds, disputes, and entitlement records
 
 ## Local development
@@ -45,15 +49,17 @@ After sign-in, the app loads that user's cloud rows and syncs changes to Supabas
 
 ## Stripe one-time checkout setup
 
-This repository contains two Supabase Edge Functions:
+This repository contains three Supabase Edge Functions:
 
 - `create-checkout`: requires a valid Supabase user session, then creates a Stripe Checkout Session in `payment` mode for the configured Stripe Price ID.
 - `stripe-webhook`: validates Stripe's timestamped HMAC signature and only creates an entitlement after Stripe reports a paid Checkout Session. It also revokes access on refunds and disputes and restores access when a dispute is won.
+- `delete-account`: verifies the signed-in user, unlinks the minimal purchase ledger for accounting/dispute retention, and permanently deletes the account, workspace records, and entitlements.
 
 **Launch pricing:** $59 USD one-time for the introductory launch offer. Set the Stripe Price to exactly USD 59.00 and use its Price ID. After the introductory offer ends, create a separate USD 79.00 one-time Price and update `STRIPE_PRICE_ID_BUSINESS_OS` to move to the standard price. Never change the price amount in the frontend; Stripe is the source of truth. Add these Edge Function secrets in Supabase (not GitHub Pages variables):
 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the **$59 USD introductory one-time lifetime purchase** (create this as a one-time price, not a recurring price)
+- `BUSINESS_OS_EXPECTED_PRICE_CENTS=5900` — server-side guard that rejects an inactive, recurring, non-USD, or wrong-amount Stripe Price. For the planned $79 standard offer, update both the Stripe Price ID and this value to `7900`.
 - `STRIPE_WEBHOOK_SECRET` — signing secret for the deployed webhook endpoint
 - `APP_ORIGIN` — full production app URL, including the GitHub Pages project path when applicable (for example, `https://OWNER.github.io/abiba` or `https://your-domain.example`). CORS compares only its origin; Stripe redirects retain its path.
 - Supabase-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
@@ -63,6 +69,7 @@ Deploy:
 ```bash
 supabase functions deploy create-checkout --no-verify-jwt
 supabase functions deploy stripe-webhook --no-verify-jwt
+supabase functions deploy delete-account --no-verify-jwt
 supabase secrets set STRIPE_SECRET_KEY=... STRIPE_PRICE_ID_BUSINESS_OS=... STRIPE_WEBHOOK_SECRET=... APP_ORIGIN=...
 ```
 
@@ -79,7 +86,7 @@ Subscribe at minimum to:
 - `charge.dispute.created`
 - `charge.dispute.closed`
 
-Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe test mode first. Verify successful payments, abandoned checkout, duplicate webhook delivery, refunds, disputes, and failed payments before enabling live mode.
+Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Configure `APP_ORIGIN` for the public site URL. The `delete-account` function uses the same `APP_ORIGIN` and Supabase service-role secret. Use Stripe test mode first. Verify successful payments, abandoned checkout, duplicate webhook delivery, refunds, disputes, and failed payments before enabling live mode.
 
 **Important release limitation:** the customer purchase gate and secure server-side checkout/webhook code are now in the repository. They are not yet live: Supabase and Stripe credentials, a real one-time Price ID, deployed Edge Functions, a configured webhook endpoint, and end-to-end test purchases are still required. The product also still needs customer-facing billing/support workflows and reviewed legal policies. Do not advertise checkout as active or accept live payments until the complete flow is configured and verified. A success URL is never proof of payment.
 
@@ -90,7 +97,11 @@ Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe
 3. Add the two browser-safe Supabase Actions variables before deploying.
 4. For a custom domain, configure the domain in GitHub Pages and adjust `base` in `vite.config.ts`.
 
-## Customer-facing policy drafts\n\nThe public portal includes privacy, terms, and refund-information pages to make the required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention/processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.\n\n## Security and commercial launch checklist
+## Customer-facing policy drafts\n\nThe public portal includes privacy, terms, and refund-information pages to make the required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention/processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.\n\n## Customer-facing policy drafts
+
+The public portal includes privacy, terms, and refund-information pages to make required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention and processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.
+
+## Security and commercial launch checklist
 
 - [ ] Configure production Supabase Auth URLs and email delivery.
 - [ ] Apply the SQL schema and validate RLS using separate test accounts.
