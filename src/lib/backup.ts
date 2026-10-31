@@ -30,7 +30,9 @@ export function parseWorkspaceBackup(value: unknown): WorkspaceBackup {
     typeof item.company === 'string' &&
     ['Lead', 'Qualified', 'Client'].includes(String(item.stage)) &&
     typeof item.value === 'number' && Number.isFinite(item.value) && item.value >= 0 &&
-    typeof item.createdAt === 'string'
+    typeof item.createdAt === 'string' &&
+    (item.notes === undefined || (typeof item.notes === 'string' && item.notes.length <= 2000)) &&
+    (item.followUpDate === undefined || typeof item.followUpDate === 'string')
   );
 
   const validTasks = tasks.every((item): item is Task =>
