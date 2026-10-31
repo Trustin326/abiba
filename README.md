@@ -12,7 +12,7 @@ A focused business workspace for freelancers, creators, consultants, and small t
 - Introductory price display: USD $59 one-time; planned standard price USD $79 one-time
 - Supabase email/password sign-up and sign-in, password reset, and password recovery
 - Per-user cloud persistence with row-level security
-- JSON export of workspace records
+- JSON export and validated JSON backup restore with merge-safe duplicate handling
 - Authenticated account deletion endpoint
 - Stripe one-time Checkout creation, server-side price validation, signed webhook verification, and purchase entitlements
 - Customer-facing privacy, terms, and refund-information pages clearly marked as drafts
@@ -105,7 +105,7 @@ The public portal contains privacy, terms, and refund-information **drafts** so 
 ### Implemented in the repository
 - [x] Public landing page, feature overview, pricing information, and FAQs
 - [x] Sign-up, sign-in, password-reset request, and password recovery flows
-- [x] Contacts, tasks, offers, search, export, and responsive dashboard
+- [x] Contacts, tasks, offers, search, export, validated JSON backup restore, and responsive dashboard
 - [x] Per-user Supabase cloud persistence and RLS schema
 - [x] One-time checkout function with server-side Stripe Price validation
 - [x] Signed Stripe webhook and server-verified entitlement gate
