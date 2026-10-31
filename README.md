@@ -96,7 +96,8 @@ Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe
 - [ ] Apply the SQL schema and validate RLS using separate test accounts.
 - [ ] Configure the one-time Stripe Price and Supabase Edge Function secrets.
 - [ ] Add and test the Stripe webhook endpoint in test mode.
-- [x] Add purchase CTA and enforce access using server-verified entitlements in the application code.\n- [ ] Verify the entitlement gate and payment lifecycle end to end in Stripe test mode.
+- [x] Add purchase CTA and enforce access using server-verified entitlements in the application code.
+- [ ] Verify the entitlement gate and payment lifecycle end to end in Stripe test mode.
 - [ ] Add account recovery, account deletion, privacy request, and support workflows.
 - [ ] Publish reviewed Privacy Policy, Terms, Refund/Cancellation Policy, and contact/support details.
 - [ ] Add automated unit, integration, and end-to-end tests.
