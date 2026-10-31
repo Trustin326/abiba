@@ -5,7 +5,7 @@ A focused business workspace for freelancers, creators, consultants, and small t
 ## Included product
 
 - Overview dashboard: client value, sales pipeline, open tasks, completed work, and offers
-- Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, and deletion
+- Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, deletion, and live-count pipeline filters for each stage
 - Task manager: due windows, priorities, completion tracking, and deletion
 - Offer catalog: service/package records, prices, draft/ready status, deletion, and native share-sheet / copy-to-clipboard sharing for ready offers
 - Responsive premium dark interface and public product landing page
