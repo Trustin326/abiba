@@ -72,8 +72,9 @@ Deno.serve(async (req) => {
     if (event.type === "charge.refunded" || event.type === "charge.dispute.created" || event.type === "charge.dispute.closed") {
       const paymentIntent = typeof object.payment_intent === "string" ? object.payment_intent : null;
       if (paymentIntent) {
-        const revoked = event.type === "charge.refunded" || (event.type === "charge.dispute.closed" && object.status !== "won") || event.type === "charge.dispute.created";
-        const status = event.type === "charge.refunded" ? "refunded" : event.type === "charge.dispute.created" ? "disputed" : object.status === "won" ? "paid" : "disputed";
+        const fullyRefunded = event.type === "charge.refunded" && Number(object.amount_refunded) >= Number(object.amount);
+        const revoked = fullyRefunded || (event.type === "charge.dispute.closed" && object.status !== "won") || event.type === "charge.dispute.created";
+        const status = event.type === "charge.refunded" ? (fullyRefunded ? "refunded" : "paid") : event.type === "charge.dispute.created" ? "disputed" : object.status === "won" ? "paid" : "disputed";
         const { data: purchase, error } = await db.from("purchases").update({ status }).eq("stripe_payment_intent_id", paymentIntent).select("id,user_id,product_key").maybeSingle();
         if (error) throw error;
         if (purchase && revoked) {
