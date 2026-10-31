@@ -38,6 +38,12 @@ Deno.serve(async (req) => {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return Response.json({ error: "Invalid session" }, { status: 401, headers: cors });
 
+  const { data: existingEntitlement, error: entitlementLookupError } = await supabase
+    .from("entitlements").select("status")
+    .eq("user_id", user.id).eq("product_key", "business_os_lifetime").maybeSingle();
+  if (entitlementLookupError) return Response.json({ error: "Could not verify existing access" }, { status: 503, headers: cors });
+  if (existingEntitlement?.status === "active") return Response.json({ error: "This account already has lifetime access" }, { status: 409, headers: cors });
+
   // Verify the configured Stripe Price matches the amount shown in the public offer.
   // This prevents an accidental wrong Price ID or recurring price from being charged.
   const priceResponse = await fetch("https://api.stripe.com/v1/prices/" + encodeURIComponent(priceId), {
