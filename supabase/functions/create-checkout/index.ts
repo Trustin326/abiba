@@ -3,8 +3,10 @@
 // STRIPE_PRICE_ID_BUSINESS_OS, APP_ORIGIN
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const configuredAppUrl = Deno.env.get("APP_ORIGIN") ?? "";
+const allowedOrigin = configuredAppUrl ? new URL(configuredAppUrl).origin : "";
 const cors = {
-  "Access-Control-Allow-Origin": Deno.env.get("APP_ORIGIN") ?? "",
+  "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
@@ -15,7 +17,6 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405, headers: cors });
 
   const origin = req.headers.get("origin");
-  const allowedOrigin = Deno.env.get("APP_ORIGIN");
   if (!allowedOrigin || origin !== allowedOrigin) return Response.json({ error: "Origin not allowed" }, { status: 403, headers: cors });
 
   const authHeader = req.headers.get("Authorization");
@@ -36,13 +37,13 @@ Deno.serve(async (req) => {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return Response.json({ error: "Invalid session" }, { status: 401, headers: cors });
 
-  const appOrigin = allowedOrigin.replace(/\/$/, "");
+  const appUrl = configuredAppUrl.replace(/\/$/, "");
   const body = new URLSearchParams({
     mode: "payment",
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
-    success_url: appOrigin + "/?checkout=success&session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: appOrigin + "/?checkout=cancelled",
+    success_url: appUrl + "/?checkout=success&session_id={CHECKOUT_SESSION_ID}",
+    cancel_url: appUrl + "/?checkout=cancelled",
     client_reference_id: user.id,
     "metadata[user_id]": user.id,
     "metadata[product_key]": "business_os_lifetime",
