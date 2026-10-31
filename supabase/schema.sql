@@ -39,5 +39,5 @@ drop policy if exists "owners read entitlements" on public.entitlements;
 create policy "owners read entitlements" on public.entitlements
   for select to authenticated using (auth.uid() = user_id);
 create index if not exists purchases_owner_created on public.purchases(user_id, created_at desc);
--- App records remain local until cloud CRUD is implemented. Payment tables are
--- a protected schema foundation, not a complete Stripe integration.
+-- App records are synchronized by the authenticated client under owner-only RLS.
+-- Payment records are written only by the trusted server-side webhook.
