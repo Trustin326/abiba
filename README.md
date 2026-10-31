@@ -25,6 +25,7 @@ Requires Node.js 20+.
 npm install
 cp .env.example .env.local
 npm run dev
+npm run test
 npm run build
 ```
 
@@ -110,6 +111,7 @@ The public portal contains privacy, terms, and refund-information **drafts** so 
 - [x] Signed Stripe webhook and server-verified entitlement gate
 - [x] Authenticated account deletion code and customer control
 - [x] Customer-facing legal-information drafts
+- [x] Unit tests for core dashboard metrics
 
 ### Still required before sales
 - [ ] Apply the SQL schema and validate RLS with separate accounts
@@ -118,7 +120,7 @@ The public portal contains privacy, terms, and refund-information **drafts** so 
 - [ ] Configure Stripe test Price and webhook; complete end-to-end payment tests
 - [ ] Deploy and test account deletion
 - [ ] Replace policy drafts with reviewed policies and verified operator/support details
-- [ ] Add automated unit, integration, and end-to-end tests; complete accessibility and security reviews
+- [ ] Expand unit coverage, add integration and end-to-end tests, and complete accessibility and security reviews
 - [ ] Obtain a successful CI build and verify GitHub Pages deployment
 - [ ] Complete refund and dispute scenario tests before live launch
 
