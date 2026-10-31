@@ -50,10 +50,10 @@ This repository contains two Supabase Edge Functions:
 - `create-checkout`: requires a valid Supabase user session, then creates a Stripe Checkout Session in `payment` mode for the configured Stripe Price ID.
 - `stripe-webhook`: validates Stripe's timestamped HMAC signature and only creates an entitlement after Stripe reports a paid Checkout Session. It also revokes access on refunds and disputes and restores access when a dispute is won.
 
-Create a one-time Stripe Price in the Stripe Dashboard. Add these Edge Function secrets in Supabase (not GitHub Pages variables):
+**Launch pricing:** $59 USD one-time for the introductory launch offer. Set the Stripe Price to exactly USD 59.00 and use its Price ID. After the introductory offer ends, create a separate USD 79.00 one-time Price and update `STRIPE_PRICE_ID_BUSINESS_OS` to move to the standard price. Never change the price amount in the frontend; Stripe is the source of truth. Add these Edge Function secrets in Supabase (not GitHub Pages variables):
 
 - `STRIPE_SECRET_KEY`
-- `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the one-time lifetime purchase
+- `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the **$59 USD introductory one-time lifetime purchase** (create this as a one-time price, not a recurring price)
 - `STRIPE_WEBHOOK_SECRET` — signing secret for the deployed webhook endpoint
 - `APP_ORIGIN` — full production app URL, including the GitHub Pages project path when applicable (for example, `https://OWNER.github.io/abiba` or `https://your-domain.example`). CORS compares only its origin; Stripe redirects retain its path.
 - Supabase-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
