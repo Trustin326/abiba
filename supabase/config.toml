@@ -1,5 +1,3 @@
-project_id = "business-os"
-
 [functions.create-checkout]
 verify_jwt = false
 
