@@ -1,6 +1,6 @@
 // Supabase Edge Function: create-checkout
 // Required secrets: SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_SECRET_KEY,
-// STRIPE_PRICE_ID_BUSINESS_OS, APP_ORIGIN
+// STRIPE_PRICE_ID_BUSINESS_OS, BUSINESS_OS_EXPECTED_PRICE_CENTS, APP_ORIGIN
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const configuredAppUrl = Deno.env.get("APP_ORIGIN") ?? "";
@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const priceId = Deno.env.get("STRIPE_PRICE_ID_BUSINESS_OS");
-  if (!supabaseUrl || !anonKey || !stripeKey || !priceId) {
+  const expectedPriceCents = Number(Deno.env.get("BUSINESS_OS_EXPECTED_PRICE_CENTS") ?? "5900");
+  if (!supabaseUrl || !anonKey || !stripeKey || !priceId || !Number.isInteger(expectedPriceCents) || expectedPriceCents <= 0) {
     return Response.json({ error: "Payment service is not configured" }, { status: 503, headers: cors });
   }
 
@@ -36,6 +37,18 @@ Deno.serve(async (req) => {
   });
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return Response.json({ error: "Invalid session" }, { status: 401, headers: cors });
+
+  // Verify the configured Stripe Price matches the amount shown in the public offer.
+  // This prevents an accidental wrong Price ID or recurring price from being charged.
+  const priceResponse = await fetch("https://api.stripe.com/v1/prices/" + encodeURIComponent(priceId), {
+    headers: { Authorization: "Bearer " + stripeKey },
+  });
+  const configuredPrice = await priceResponse.json();
+  if (!priceResponse.ok || !configuredPrice.active || configuredPrice.type !== "one_time" ||
+      configuredPrice.currency !== "usd" || configuredPrice.unit_amount !== expectedPriceCents) {
+    console.error("Stripe Price configuration does not match expected one-time USD price");
+    return Response.json({ error: "The checkout price is not configured correctly. Please contact support." }, { status: 503, headers: cors });
+  }
 
   const appUrl = configuredAppUrl.replace(/\/$/, "");
   const body = new URLSearchParams({
