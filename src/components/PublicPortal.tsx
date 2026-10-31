@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 type Page = 'home' | 'signin' | 'signup' | 'reset' | 'privacy' | 'terms' | 'refunds';
 
-export default function PublicPortal() {
+export default function PublicPortal({ onPreviewDemo }: { onPreviewDemo?: () => void }) {
   const [page, setPage] = useState<Page>('home');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +13,8 @@ export default function PublicPortal() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!supabase || busy) return;
+    if (busy) return;
+    if (!supabase) { setMessage('Account and checkout services are not connected in this preview yet. You can explore the sample workspace, or return after the owner completes setup.'); return; }
     setBusy(true); setMessage('');
     try {
       if (page === 'signup') {
@@ -47,7 +48,7 @@ export default function PublicPortal() {
         <div className="eyebrow"><i/> A CLEARER WAY TO RUN YOUR BUSINESS</div>
         <h1>Less juggling.<br/><em>More meaningful</em> momentum.</h1>
         <p className="public-lead">A beautifully focused workspace for independent business owners. Keep client relationships, daily priorities, and service offers organized in one place.</p>
-        <div className="public-cta"><button className="button primary" onClick={() => setPage('signup')}>Create your account <ArrowRight size={16}/></button><button className="button secondary" onClick={() => setPage('signin')}>Already have an account</button></div>
+        <div className="public-cta"><button className="button primary" onClick={() => setPage('signup')}>Create your account <ArrowRight size={16}/></button><button className="button secondary" onClick={() => setPage('signin')}>Already have an account</button><button className="public-demo-link" onClick={onPreviewDemo}>Explore the sample workspace</button></div>
         <div className="public-trust"><span><Check size={14}/> One-time purchase</span><span><Check size={14}/> No recurring subscription</span><span><Check size={14}/> No AI features</span></div>
         <div className="public-orbit orbit-one"/><div className="public-orbit orbit-two"/>
       </section>
