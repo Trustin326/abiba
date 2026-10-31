@@ -41,7 +41,7 @@ Never put a Supabase service-role key, Stripe secret key, or Stripe webhook sign
 6. Deploy the Edge Functions described below.
 7. Test two separate accounts and verify each account can only read/write its own contacts, tasks, and offers.
 
-After sign-in, the app loads that user's cloud rows and syncs changes to Supabase. Signed-out/demo mode uses local browser storage. Cloud sync requires the schema to be installed and Supabase variables to be configured. The current UI does not yet include a full account deletion/export request workflow; workspace JSON export is available.
+After sign-in, the app loads that user's cloud rows and syncs changes to Supabase. Signed-out/demo mode uses local browser storage. Cloud sync requires the schema to be installed and Supabase variables to be configured. Workspace JSON export is available. Signed-in users can request permanent account deletion from Settings; the server verifies the session, removes workspace and entitlement records, and unlinks the minimal purchase ledger for accounting/dispute retention. Deploy the `delete-account` function before enabling that control.
 
 ## Stripe one-time checkout setup
 
@@ -90,7 +90,7 @@ Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe
 3. Add the two browser-safe Supabase Actions variables before deploying.
 4. For a custom domain, configure the domain in GitHub Pages and adjust `base` in `vite.config.ts`.
 
-## Security and commercial launch checklist
+## Customer-facing policy drafts\n\nThe public portal includes privacy, terms, and refund-information pages to make the required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention/processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.\n\n## Security and commercial launch checklist
 
 - [ ] Configure production Supabase Auth URLs and email delivery.
 - [ ] Apply the SQL schema and validate RLS using separate test accounts.
@@ -98,8 +98,8 @@ Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe
 - [ ] Add and test the Stripe webhook endpoint in test mode.
 - [x] Add purchase CTA and enforce access using server-verified entitlements in the application code.
 - [ ] Verify the entitlement gate and payment lifecycle end to end in Stripe test mode.
-- [ ] Add account recovery, account deletion, privacy request, and support workflows.
-- [ ] Publish reviewed Privacy Policy, Terms, Refund/Cancellation Policy, and contact/support details.
+- [x] Add password recovery, workspace JSON export, and authenticated account deletion code.\n- [ ] Deploy and test the account deletion Edge Function.\n- [ ] Establish a monitored support contact and complete privacy-request handling.
+- [ ] Replace the in-app policy drafts with reviewed Privacy Policy, Terms, Refund Policy, and verified operator/contact details.
 - [ ] Add automated unit, integration, and end-to-end tests.
 - [ ] Run dependency/security checks and accessibility review.
 - [ ] Verify GitHub Actions CI and Pages deployment on the production branch.
