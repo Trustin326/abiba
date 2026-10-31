@@ -55,7 +55,7 @@ Create a one-time Stripe Price in the Stripe Dashboard. Add these Edge Function 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the one-time lifetime purchase
 - `STRIPE_WEBHOOK_SECRET` — signing secret for the deployed webhook endpoint
-- `APP_ORIGIN` — exact production app origin, e.g. `https://your-domain.example`
+- `APP_ORIGIN` — full production app URL, including the GitHub Pages project path when applicable (for example, `https://OWNER.github.io/abiba` or `https://your-domain.example`). CORS compares only its origin; Stripe redirects retain its path.
 - Supabase-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
 
 Deploy:
