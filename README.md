@@ -1,22 +1,21 @@
 # Business OS
 
-A premium, dark workspace for freelancers, creators, consultants, and small businesses. This product intentionally contains **no AI features** and uses **one-time payment only** (no recurring customer subscriptions).
+A focused business workspace for freelancers, creators, consultants, and small teams. Business OS intentionally has **no AI features** and uses a **one-time purchase model** rather than recurring customer subscriptions.
 
-## Product modules
+## Included product
 
-- Overview dashboard with client value, pipeline, tasks, and offer summaries
-- Contacts CRM with lead / qualified / client stages
-- Task list with priorities and completion tracking
-- Offer catalog for services and packages
-- Search, JSON workspace export, responsive navigation
-- Public landing page with feature overview, one-time pricing, and FAQs
-- Supabase email/password sign-up and sign-in, password-reset request, and password recovery
-- Customer-facing privacy, terms, and refund-information draft pages (not finalized legal policies)
-- Supabase email/password authentication
-- Per-user Supabase cloud persistence for contacts, tasks, and offers
-- Stripe Checkout Edge Function for a one-time lifetime purchase with a server-side Stripe Price validation check
-- Authenticated account deletion endpoint; workspace and entitlements cascade while the minimum purchase ledger is retained without its account link
-- Signature-verified Stripe webhook for payment confirmation, refunds, disputes, and entitlement records
+- Overview dashboard: client value, sales pipeline, open tasks, completed work, and offers
+- Contacts CRM: contact records, lead / qualified / client stages, opportunity values, search, and deletion
+- Task manager: due windows, priorities, completion tracking, and deletion
+- Offer catalog: service/package records, prices, draft/ready status, and deletion
+- Responsive premium dark interface and public product landing page
+- Introductory price display: USD $59 one-time; planned standard price USD $79 one-time
+- Supabase email/password sign-up and sign-in, password reset, and password recovery
+- Per-user cloud persistence with row-level security
+- JSON export of workspace records
+- Authenticated account deletion endpoint
+- Stripe one-time Checkout creation, server-side price validation, signed webhook verification, and purchase entitlements
+- Customer-facing privacy, terms, and refund-information pages clearly marked as drafts
 
 ## Local development
 
@@ -29,91 +28,98 @@ npm run dev
 npm run build
 ```
 
-Set only the browser-safe Supabase project URL and anon/publishable key in `.env.local`:
+Browser-safe environment variables:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
-Never put a Supabase service-role key, Stripe secret key, or Stripe webhook signing secret in a `VITE_*` variable, frontend file, GitHub Pages artifact, or committed environment file.
+Never expose Supabase service-role keys, Stripe secret keys, or webhook signing secrets in `VITE_*` variables, browser code, GitHub Pages artifacts, or committed files.
 
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL Editor.
-3. Configure Supabase Auth site URL and redirect allowlist for the final production origin and local development origin.
-4. Configure email confirmation and password reset behavior.
-5. Add GitHub Actions repository variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Pages build.
-6. Deploy the Edge Functions described below.
-7. Test two separate accounts and verify each account can only read/write its own contacts, tasks, and offers.
+2. Run `supabase/schema.sql` in the SQL Editor. The script includes the purchase-ledger migration needed for account deletion.
+3. Configure Auth site URL and redirect allowlist for the production app URL and local development URL.
+4. Configure email confirmation and password-reset delivery.
+5. Add GitHub Actions repository variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+6. Deploy the Edge Functions listed below and configure their secrets.
+7. Test with at least two accounts. Confirm that each account can only access its own contacts, tasks, and offers.
 
-After sign-in, the app loads that user's cloud rows and syncs changes to Supabase. Signed-out/demo mode uses local browser storage. Cloud sync requires the schema to be installed and Supabase variables to be configured. Workspace JSON export is available. Signed-in users can request permanent account deletion from Settings; the server verifies the session, removes workspace and entitlement records, and unlinks the minimal purchase ledger for accounting/dispute retention. Deploy the `delete-account` function before enabling that control.
+When authenticated, the app loads that user's cloud records and syncs changes to Supabase. Signed-out demo mode uses local browser storage. Do not use demo-mode records as customer data.
 
-## Stripe one-time checkout setup
+## One-time Stripe setup
 
-This repository contains three Supabase Edge Functions:
+The app uses Stripe Checkout in `payment` mode. It does not create a recurring subscription.
 
-- `create-checkout`: requires a valid Supabase user session, then creates a Stripe Checkout Session in `payment` mode for the configured Stripe Price ID.
-- `stripe-webhook`: validates Stripe's timestamped HMAC signature and only creates an entitlement after Stripe reports a paid Checkout Session. It also revokes access on refunds and disputes and restores access when a dispute is won.
-- `delete-account`: verifies the signed-in user, unlinks the minimal purchase ledger for accounting/dispute retention, and permanently deletes the account, workspace records, and entitlements.
+**Introductory offer:** USD $59 one-time lifetime purchase. The planned standard price is USD $79. The Stripe Price ID and expected amount must match the price shown in the product.
 
-**Launch pricing:** $59 USD one-time for the introductory launch offer. Set the Stripe Price to exactly USD 59.00 and use its Price ID. After the introductory offer ends, create a separate USD 79.00 one-time Price and update `STRIPE_PRICE_ID_BUSINESS_OS` to move to the standard price. Never change the price amount in the frontend; Stripe is the source of truth. Add these Edge Function secrets in Supabase (not GitHub Pages variables):
-
+Required Supabase Edge Function secrets:
 - `STRIPE_SECRET_KEY`
-- `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the **$59 USD introductory one-time lifetime purchase** (create this as a one-time price, not a recurring price)
-- `BUSINESS_OS_EXPECTED_PRICE_CENTS=5900` — server-side guard that rejects an inactive, recurring, non-USD, or wrong-amount Stripe Price. For the planned $79 standard offer, update both the Stripe Price ID and this value to `7900`.
-- `STRIPE_WEBHOOK_SECRET` — signing secret for the deployed webhook endpoint
-- `APP_ORIGIN` — full production app URL, including the GitHub Pages project path when applicable (for example, `https://OWNER.github.io/abiba` or `https://your-domain.example`). CORS compares only its origin; Stripe redirects retain its path.
+- `STRIPE_PRICE_ID_BUSINESS_OS`: Stripe Price ID for an active, one-time USD $59 price
+- `BUSINESS_OS_EXPECTED_PRICE_CENTS=5900`: server-side guard that rejects inactive, recurring, non-USD, or wrong-amount prices. For the planned $79 standard price, update both the Stripe Price ID and this value to `7900`.
+- `STRIPE_WEBHOOK_SECRET`
+- `APP_ORIGIN`: full public app URL, including the project path when using GitHub Pages (for example, `https://OWNER.github.io/abiba`)
 - Supabase-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
 
-Deploy:
+Deploy the three functions:
 
 ```bash
 supabase functions deploy create-checkout --no-verify-jwt
 supabase functions deploy stripe-webhook --no-verify-jwt
 supabase functions deploy delete-account --no-verify-jwt
-supabase secrets set STRIPE_SECRET_KEY=... STRIPE_PRICE_ID_BUSINESS_OS=... STRIPE_WEBHOOK_SECRET=... APP_ORIGIN=...
+supabase secrets set STRIPE_SECRET_KEY=... STRIPE_PRICE_ID_BUSINESS_OS=... BUSINESS_OS_EXPECTED_PRICE_CENTS=5900 STRIPE_WEBHOOK_SECRET=... APP_ORIGIN=...
 ```
 
-In Stripe Dashboard, add a webhook endpoint pointing to:
+Configure a Stripe webhook endpoint at:
 
 ```
 https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook
 ```
 
-Subscribe at minimum to:
+Subscribe to:
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
 - `charge.refunded`
 - `charge.dispute.created`
 - `charge.dispute.closed`
 
-Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Configure `APP_ORIGIN` for the public site URL. The `delete-account` function uses the same `APP_ORIGIN` and Supabase service-role secret. Use Stripe test mode first. Verify successful payments, abandoned checkout, duplicate webhook delivery, refunds, disputes, and failed payments before enabling live mode.
+Test successful payments, abandoned checkout, duplicate event delivery, refunds, disputes, and failed payments in Stripe test mode before enabling live payments. A return URL is never proof of payment; the verified webhook is the source of entitlement changes.
 
-**Important release limitation:** the customer purchase gate and secure server-side checkout/webhook code are now in the repository. They are not yet live: Supabase and Stripe credentials, a real one-time Price ID, deployed Edge Functions, a configured webhook endpoint, and end-to-end test purchases are still required. The product also still needs customer-facing billing/support workflows and reviewed legal policies. Do not advertise checkout as active or accept live payments until the complete flow is configured and verified. A success URL is never proof of payment.
+## Account deletion and data
+
+Customers can export workspace records as JSON. Signed-in customers can request permanent account deletion from Settings or the unpaid-access screen. The deletion function verifies the user's session, removes workspace and entitlement records, and unlinks the minimal purchase ledger from the account so accounting/dispute records can be retained. Deploy and test this function before making the control available to customers.
 
 ## GitHub Pages
 
-1. In repository Settings → Pages, choose **GitHub Actions** as the source.
+1. In repository Settings → Pages, select **GitHub Actions** as the source.
 2. The deployment workflow publishes the `main` branch to `https://OWNER.github.io/abiba/`.
-3. Add the two browser-safe Supabase Actions variables before deploying.
-4. For a custom domain, configure the domain in GitHub Pages and adjust `base` in `vite.config.ts`.
+3. Add the two browser-safe Supabase Actions variables before deployment.
+4. The Vite config already sets the `/abiba/` project base for the Pages build.
 
-## Customer-facing policy drafts\n\nThe public portal includes privacy, terms, and refund-information pages to make the required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention/processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.\n\n## Customer-facing policy drafts
+## Legal and customer support
 
-The public portal includes privacy, terms, and refund-information pages to make required disclosures visible during development. They are intentionally labeled as drafts and must not be treated as finalized legal policies. The operator must supply its legal business identity, support contact, governing jurisdiction, actual retention and processor details, refund window, and other business-specific terms and obtain appropriate review before accepting payments.
+The public portal contains privacy, terms, and refund-information **drafts** so the product's disclosures are visible during development. They are not final legal policies. Before accepting payments, the operator must supply and verify its legal business identity, customer support contact, governing jurisdiction, data-retention and processor details, refund window and process, acceptable-use rules, and other business-specific terms, then obtain appropriate review. A monitored customer-support route and privacy-request process must also be established.
 
-## Security and commercial launch checklist
+## Release checklist
 
-- [ ] Configure production Supabase Auth URLs and email delivery.
-- [ ] Apply the SQL schema and validate RLS using separate test accounts.
-- [ ] Configure the one-time Stripe Price and Supabase Edge Function secrets.
-- [ ] Add and test the Stripe webhook endpoint in test mode.
-- [x] Add purchase CTA and enforce access using server-verified entitlements in the application code.
-- [ ] Verify the entitlement gate and payment lifecycle end to end in Stripe test mode.
-- [x] Add password recovery, workspace JSON export, and authenticated account deletion code.\n- [ ] Deploy and test the account deletion Edge Function.\n- [ ] Establish a monitored support contact and complete privacy-request handling.
-- [ ] Replace the in-app policy drafts with reviewed Privacy Policy, Terms, Refund Policy, and verified operator/contact details.
-- [ ] Add automated unit, integration, and end-to-end tests.
-- [ ] Run dependency/security checks and accessibility review.
-- [ ] Verify GitHub Actions CI and Pages deployment on the production branch.
-- [ ] Complete test purchases and refund/dispute scenarios before live launch.
+### Implemented in the repository
+- [x] Public landing page, feature overview, pricing information, and FAQs
+- [x] Sign-up, sign-in, password-reset request, and password recovery flows
+- [x] Contacts, tasks, offers, search, export, and responsive dashboard
+- [x] Per-user Supabase cloud persistence and RLS schema
+- [x] One-time checkout function with server-side Stripe Price validation
+- [x] Signed Stripe webhook and server-verified entitlement gate
+- [x] Authenticated account deletion code and customer control
+- [x] Customer-facing legal-information drafts
 
-This is an actively developed release candidate, not a certification of legal compliance, security, or production readiness. Do not promise a particular business outcome or revenue level.
+### Still required before sales
+- [ ] Apply the SQL schema and validate RLS with separate accounts
+- [ ] Configure Supabase project, Auth URLs, and production email delivery
+- [ ] Deploy all Edge Functions and configure server-only secrets
+- [ ] Configure Stripe test Price and webhook; complete end-to-end payment tests
+- [ ] Deploy and test account deletion
+- [ ] Replace policy drafts with reviewed policies and verified operator/support details
+- [ ] Add automated unit, integration, and end-to-end tests; complete accessibility and security reviews
+- [ ] Obtain a successful CI build and verify GitHub Pages deployment
+- [ ] Complete refund and dispute scenario tests before live launch
+
+This repository is an actively developed release candidate, not a certification of legal compliance, security, or production readiness. Do not accept live payments until the release checklist is complete.
