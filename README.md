@@ -1,32 +1,107 @@
 # Business OS
 
-Premium dark workspace for freelancers, creators, consultants, and small businesses. No AI features and no subscription billing.
+A premium, dark workspace for freelancers, creators, consultants, and small businesses. This product intentionally contains **no AI features** and uses **one-time payment only** (no recurring customer subscriptions).
 
-## Included
-- Responsive dashboard, contacts CRM, tasks, offer catalog, and settings
-- Create contacts/tasks/offers, complete tasks, remove records, search, JSON export
-- Local browser persistence and optional Supabase email/password authentication wiring
-- Starter Supabase schema with per-user row-level security and protected purchase/entitlement tables (schema foundation only)
-- GitHub Pages deployment workflow
+## Product modules
+
+- Overview dashboard with client value, pipeline, tasks, and offer summaries
+- Contacts CRM with lead / qualified / client stages
+- Task list with priorities and completion tracking
+- Offer catalog for services and packages
+- Search, JSON workspace export, responsive navigation
+- Supabase email/password authentication
+- Per-user Supabase cloud persistence for contacts, tasks, and offers
+- Stripe Checkout Edge Function for a one-time lifetime purchase
+- Signature-verified Stripe webhook for payment confirmation, refunds, disputes, and entitlement records
 
 ## Local development
-Requires Node.js 20+. Run `npm install`, `npm run dev`, and `npm run build`.
+
+Requires Node.js 20+.
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+npm run build
+```
+
+Set only the browser-safe Supabase project URL and anon/publishable key in `.env.local`:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Never put a Supabase service-role key, Stripe secret key, or Stripe webhook signing secret in a `VITE_*` variable, frontend file, GitHub Pages artifact, or committed environment file.
+
+## Supabase setup
+
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor.
+3. Configure Supabase Auth site URL and redirect allowlist for the final production origin and local development origin.
+4. Configure email confirmation and password reset behavior.
+5. Add GitHub Actions repository variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Pages build.
+6. Deploy the Edge Functions described below.
+7. Test two separate accounts and verify each account can only read/write its own contacts, tasks, and offers.
+
+After sign-in, the app loads that user's cloud rows and syncs changes to Supabase. Signed-out/demo mode uses local browser storage. Cloud sync requires the schema to be installed and Supabase variables to be configured. The current UI does not yet include a full account deletion/export request workflow; workspace JSON export is available.
+
+## Stripe one-time checkout setup
+
+This repository contains two Supabase Edge Functions:
+
+- `create-checkout`: requires a valid Supabase user session, then creates a Stripe Checkout Session in `payment` mode for the configured Stripe Price ID.
+- `stripe-webhook`: validates Stripe's timestamped HMAC signature and only creates an entitlement after Stripe reports a paid Checkout Session. It also revokes access on refunds and disputes and restores access when a dispute is won.
+
+Create a one-time Stripe Price in the Stripe Dashboard. Add these Edge Function secrets in Supabase (not GitHub Pages variables):
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_PRICE_ID_BUSINESS_OS` — the Stripe Price ID for the one-time lifetime purchase
+- `STRIPE_WEBHOOK_SECRET` — signing secret for the deployed webhook endpoint
+- `APP_ORIGIN` — exact production app origin, e.g. `https://your-domain.example`
+- Supabase-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
+
+Deploy:
+
+```bash
+supabase functions deploy create-checkout --no-verify-jwt
+supabase functions deploy stripe-webhook --no-verify-jwt
+supabase secrets set STRIPE_SECRET_KEY=... STRIPE_PRICE_ID_BUSINESS_OS=... STRIPE_WEBHOOK_SECRET=... APP_ORIGIN=...
+```
+
+In Stripe Dashboard, add a webhook endpoint pointing to:
+
+```
+https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook
+```
+
+Subscribe at minimum to:
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `charge.refunded`
+- `charge.dispute.created`
+- `charge.dispute.closed`
+
+Set the generated endpoint signing secret as `STRIPE_WEBHOOK_SECRET`. Use Stripe test mode first. Verify successful payments, abandoned checkout, duplicate webhook delivery, refunds, disputes, and failed payments before enabling live mode.
+
+**Important release limitation:** the secure server-side checkout and webhook foundations are in the repository, but the customer-facing purchase button, entitlement-based app lock, customer billing/support screens, and live Stripe/Supabase configuration still need to be connected and tested. Do not advertise checkout as active or accept live payments until that end-to-end flow is complete. A success URL is never proof of payment.
 
 ## GitHub Pages
-1. Repository Settings → Pages → set source to GitHub Actions.
-2. Workflow deploys on pushes to main at `https://OWNER.github.io/abiba/`.
-3. For a custom domain, adjust `base` in vite.config.ts.
 
-## Supabase
-1. Create a project and run `supabase/schema.sql` in the SQL Editor.
-2. Configure Auth URL allowlists and email confirmation.
-3. Add Actions variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` or use `.env.local` locally.
-4. Never expose a service-role key in browser code or a `VITE_` variable.
+1. In repository Settings → Pages, choose **GitHub Actions** as the source.
+2. The deployment workflow publishes the `main` branch to `https://OWNER.github.io/abiba/`.
+3. Add the two browser-safe Supabase Actions variables before deploying.
+4. For a custom domain, configure the domain in GitHub Pages and adjust `base` in `vite.config.ts`.
 
-**Important:** Supabase auth is wired, but contacts/tasks/offers currently persist in localStorage and are not synced to cloud tables. Do not use this as a multi-user cloud SaaS until cloud CRUD, loading/error states, account deletion, and cross-user isolation are implemented and tested.
+## Security and commercial launch checklist
 
-## Stripe / one-time payments
-No payment access is granted in this version. `supabase/schema.sql` includes protected purchase/entitlement table foundations, but there is no Stripe checkout or webhook implementation yet. A Payment Link or success URL is not proof of payment. Before selling access, implement a server-side Stripe webhook (for example, a Supabase Edge Function), verify signatures, handle duplicate events idempotently, and write entitlements only from trusted server code. Keep Stripe secret and webhook signing keys in server-side secrets only.
+- [ ] Configure production Supabase Auth URLs and email delivery.
+- [ ] Apply the SQL schema and validate RLS using separate test accounts.
+- [ ] Configure the one-time Stripe Price and Supabase Edge Function secrets.
+- [ ] Add and test the Stripe webhook endpoint in test mode.
+- [ ] Add purchase CTA and enforce access using server-verified entitlements.
+- [ ] Add account recovery, account deletion, privacy request, and support workflows.
+- [ ] Publish reviewed Privacy Policy, Terms, Refund/Cancellation Policy, and contact/support details.
+- [ ] Add automated unit, integration, and end-to-end tests.
+- [ ] Run dependency/security checks and accessibility review.
+- [ ] Verify GitHub Actions CI and Pages deployment on the production branch.
+- [ ] Complete test purchases and refund/dispute scenarios before live launch.
 
-## Launch status
-This is a functional UI/MVP foundation, not yet a fully production-ready commercial SaaS. Before launch, finish cloud CRUD and account lifecycle, verified one-time checkout/entitlements and refunds, privacy/terms/refund pages, support contact, automated tests/accessibility checks, and verify deployment. No revenue outcome is guaranteed.
+This is an actively developed release candidate, not a certification of legal compliance, security, or production readiness. Do not promise a particular business outcome or revenue level.
