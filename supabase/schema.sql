@@ -48,3 +48,8 @@ alter table public.purchases alter column user_id drop not null;
 alter table public.purchases drop constraint if exists purchases_user_id_fkey;
 alter table public.purchases add constraint purchases_user_id_fkey
   foreign key (user_id) references auth.users(id) on delete set null;
+
+-- Client relationship context and next-contact reminders.
+alter table public.contacts add column if not exists notes text not null default '' check (char_length(notes) <= 2000);
+alter table public.contacts add column if not exists follow_up_date date;
+create index if not exists contacts_owner_follow_up on public.contacts(user_id, follow_up_date) where follow_up_date is not null;
